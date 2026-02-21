@@ -1,103 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Line Spacer Tool</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torrent Tracker List Converter</title>
+    <link rel="icon" type="image/svg+xml" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><linearGradient id="a" x1="14.003" x2="33.995" y1="6.686" y2="41.315" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="%2321ad64"/><stop offset="1" stop-color="%23088242"/></linearGradient><path fill="url(%23a)" fill-rule="evenodd" d="M44,24c0,1.01-0.08,2-0.22,2.97L42,29l0.17,3.36 c-2.8,6.04-8.51,10.46-15.32,11.43L22,43l-4.36-0.04C9.72,40.3,4,32.8,4,24C4,12.98,12.98,4,24,4S44,12.98,44,24z" clip-rule="evenodd"/><path fill="%23fff" fill-rule="evenodd" d="M43.78,26.97c-0.28,1.9-0.84,3.71-1.61,5.39 c-2.63-0.01-5.06-0.9-6.77-3.17c-0.65,5.33-6.09,7.75-12.96,6.2l4.41,8.4C25.92,43.93,24.97,44,24,44c-2.22,0-4.36-0.36-6.36-1.04 L8.29,17.97c-0.42-1.11,0.23-2.35,1.39-2.64l4.1-1.02c0.98-0.25,2,0.28,2.35,1.24c2.49,6.71,5.75,16.9,12.1,15.26 c6.95-1.71,2.56-10.87,0.19-16.49c-0.5-1.2,0.26-2.55,1.54-2.75l3.05-0.47c0.89-0.13,1.76,0.34,2.13,1.16 C38.71,20.12,40.48,25.85,43.78,26.97z" clip-rule="evenodd"/></svg>'>
+    
+    <style>
+        /* --- DESIGN SYSTEM --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --container-bg: #ffffff;
+            --text-main: #222222;
+            --text-secondary: #555555;
+            --input-bg: #f8f9fa;
+            --border-color: #eeeeee;
+            --accent-color: #21ad64; /* Green from logo */
+            --accent-hover: #088242;
+            --success-color: #00C853;
+            --shadow: 0 10px 40px rgba(0,0,0,0.1);
+            --radius-lg: 24px;
+            --radius-md: 10px;
+        }
 
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #121212;
-    color: #e0e0e0;
-    margin: 50px;
-  }
-  h1, h2 {
-    text-align: center;
-    font-weight: bold;
-  }
-  label {
-    display: block;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  textarea, button {
-    font-size: 14px;
-    padding: 8px;
-    margin-top: 5px;
-    border-radius: 5px;
-    border: none;
-  }
-  textarea {
-    width: 100%;
-    resize: vertical;
-    min-height: 120px;
-    background-color: #1e1e1e;
-    color: #e0e0e0;
-  }
-  button {
-    background-color: #6200ea;
-    color: #fff;
-    cursor: pointer;
-    transition: 0.2s;
-    margin-right: 10px;
-  }
-  button:active {
-    transform: scale(0.98);
-  }
-  #output {
-    white-space: pre-wrap;
-    background-color: #1e1e1e;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #333;
-    margin-top: 10px;
-    max-height: 500px;
-    overflow-y: auto;
-  }
-</style>
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-secondary: #bbbbbb;
+            --input-bg: #252525;
+            --border-color: #333333;
+            --shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- THEME TOGGLE --- */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            color: var(--text-secondary);
+            z-index: 1000;
+        }
+
+        .sun-icon { display: none; }
+        [data-theme="dark"] .moon-icon { display: none; }
+        [data-theme="dark"] .sun-icon { display: block; }
+
+        /* --- CONTAINER (1000px) --- */
+        .container {
+            background: var(--container-bg);
+            padding: 3rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 1000px;
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .header-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+        }
+
+        h1 { 
+            text-align: center; 
+            margin: 0; 
+            font-size: 2.2rem;
+            letter-spacing: -0.5px;
+        }
+
+        .title-green { color: #21ad64; font-weight: 800; }
+        .title-white { color: var(--text-main); font-weight: 400; }
+
+        label { display: block; margin-bottom: 10px; font-weight: 600; font-size: 0.95rem; color: var(--text-secondary); }
+
+        /* --- INPUTS --- */
+        textarea {
+            width: 100%;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 220px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 20px;
+        }
+        textarea:focus { border-color: var(--accent-color); }
+
+        /* --- CONVERT BUTTON --- */
+        #convertBtn {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        #convertBtn:hover { background-color: var(--accent-hover); }
+        #convertBtn:active { transform: scale(0.99); }
+
+        /* --- OUTPUT AREA --- */
+        .output-header {
+            margin-top: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .output-header h2 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .output-container {
+            position: relative;
+        }
+
+        #output {
+            white-space: pre-wrap;
+            background-color: var(--input-bg);
+            padding: 25px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            min-height: 120px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        /* --- ICON COPY BUTTON --- */
+        #copyBtn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 42px;
+            height: 42px;
+            padding: 10px;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        #copyBtn:hover { 
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        #copyBtn.success {
+            background-color: var(--success-color);
+            color: white !important;
+            border-color: var(--success-color);
+        }
+
+        svg { flex-shrink: 0; }
+    </style>
 </head>
-<body>
+<body data-theme="dark">
 
-<h1>Line Spacer <span style="color:#00ce0a;">Tool</span></h1>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+    </button>
 
-<label for="inputText">Input:</label>
-<textarea id="inputText" placeholder="Paste text here..."></textarea>
+    <div class="container">
+        <div class="header-area">
+            <div class="logo-svg">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><linearGradient id="logoGrad" x1="14.003" x2="33.995" y1="6.686" y2="41.315" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#21ad64"/><stop offset="1" stop-color="#088242"/></linearGradient><path fill="url(#logoGrad)" fill-rule="evenodd" d="M44,24c0,1.01-0.08,2-0.22,2.97L42,29l0.17,3.36 c-2.8,6.04-8.51,10.46-15.32,11.43L22,43l-4.36-0.04C9.72,40.3,4,32.8,4,24C4,12.98,12.98,4,24,4S44,12.98,44,24z" clip-rule="evenodd"/><path fill="#fff" fill-rule="evenodd" d="M43.78,26.97c-0.28,1.9-0.84,3.71-1.61,5.39 c-2.63-0.01-5.06-0.9-6.77-3.17c-0.65,5.33-6.09,7.75-12.96,6.2l4.41,8.4C25.92,43.93,24.97,44,24,44c-2.22,0-4.36-0.36-6.36-1.04 L8.29,17.97c-0.42-1.11,0.23-2.35,1.39-2.64l4.1-1.02c0.98-0.25,2,0.28,2.35,1.24c2.49,6.71,5.75,16.9,12.1,15.26 c6.95-1.71,2.56-10.87,0.19-16.49c-0.5-1.2,0.26-2.55,1.54-2.75l3.05-0.47c0.89-0.13,1.76,0.34,2.13,1.16 C38.71,20.12,40.48,25.85,43.78,26.97z" clip-rule="evenodd"/></svg>
+            </div>
+            <h1>
+                <span class="title-green">Torrent Tracker</span> 
+                <span class="title-white">List Converter</span>
+            </h1>
+        </div>
 
-<button id="convertBtn">🔧 Convert</button>
-<button id="copyBtn">💾 Copy</button>
+        <label for="inputText">Paste Tracker List:</label>
+        <textarea id="inputText" placeholder="udp://tracker.example.com:80/announce&#10;http://tracker.test.org:6969/announce"></textarea>
 
-<h2>Output:</h2>
-<div id="output"></div>
+        <button id="convertBtn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg>
+            Convert List
+        </button>
 
-<script>
-document.getElementById('convertBtn').addEventListener('click', () => {
-  const input = document.getElementById('inputText').value;
+        <div class="output-header">
+            <h2>Resulting List:</h2>
+        </div>
 
-  const lines = input
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(l => l !== '');
+        <div class="output-container">
+            <div id="output"></div>
+            <button id="copyBtn" title="Copy to clipboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
 
-  const output = lines.join('\n\n');
-  document.getElementById('output').textContent = output;
-});
+    <script>
+        document.getElementById('convertBtn').addEventListener('click', () => {
+            const input = document.getElementById('inputText').value;
+            const lines = input
+                .split(/\r?\n/)
+                .map(l => l.trim())
+                .filter(l => l !== '');
 
-document.getElementById('copyBtn').addEventListener('click', () => {
-  const output = document.getElementById('output').textContent;
-  if (!output) return;
+            const output = lines.join('\n\n');
+            document.getElementById('output').textContent = output;
+        });
 
-  navigator.clipboard.writeText(output).then(() => {
-    const btn = document.getElementById('copyBtn');
-    const original = btn.textContent;
-    btn.textContent = 'Copied';
-    btn.style.backgroundColor = '#00C853';
-    setTimeout(() => {
-      btn.textContent = original;
-      btn.style.backgroundColor = '#6200ea';
-    }, 2000);
-  });
-});
-</script>
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const output = document.getElementById('output').textContent;
+            if (!output) return;
 
+            navigator.clipboard.writeText(output).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalSvg = btn.innerHTML;
+                
+                btn.classList.add('success');
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                
+                setTimeout(() => {
+                    btn.classList.remove('success');
+                    btn.innerHTML = originalSvg;
+                }, 2000);
+            });
+        });
+
+        function toggleTheme() {
+            const body = document.body;
+            const next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+            localStorage.setItem('torrent-tool-theme', next);
+        }
+
+        const savedTheme = localStorage.getItem('torrent-tool-theme');
+        if (savedTheme) document.body.setAttribute('data-theme', savedTheme);
+    </script>
 </body>
 </html>
